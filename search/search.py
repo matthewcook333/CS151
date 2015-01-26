@@ -86,8 +86,49 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    print "Start:", problem.getStartState()
+    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    s = util.Stack()
+    
+    s.push([(problem.getStartState(), 'HI', 0)])
+
+#    if problem.isGoalState(problem.getStartState()):
+#        return []
+
+#    for succ in problem.getSuccessors(problem.getStartState()):
+#        s.push([succ])
+
+    while not s.isEmpty():
+        currentSuccList = s.pop()
+        #print currentSuccList
+        #print not s.isEmpty()
+        if problem.isGoalState(currentSuccList[0][0]):
+            return getActionListFromSuccList(currentSuccList)
+        for succ in problem.getSuccessors(currentSuccList[0][0]):
+            visited = False
+            for (state, action, cost) in currentSuccList:
+                print state + " " + succ[0]
+                if state == succ[0]:
+                    print "V: " + state
+                    visited = True
+                    break
+                else:
+                    print "N: " + state
+            if not visited:
+                newPath = list(currentSuccList)
+                newPath.insert(0, succ)
+                s.push(newPath)
+    print "FAILURE"
+
+def getActionListFromSuccList(succList):
+    """
+    Given a list of successors, extract the list of actions.
+    """
+    actionList = []
+    for succ in succList[:len(succList)-1]:
+        actionList.insert(0, succ[1])
+    return actionList
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
