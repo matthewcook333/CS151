@@ -90,32 +90,33 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     s = util.Stack()
+    closed = set()
     
-    s.push([(problem.getStartState(), 'HI', 0)])
-
-#    if problem.isGoalState(problem.getStartState()):
-#        return []
-
-#    for succ in problem.getSuccessors(problem.getStartState()):
-#        s.push([succ])
+    s.push([(problem.getStartState(), 'INITIAL', 0)])
 
     while not s.isEmpty():
         currentSuccList = s.pop()
+        currentState = currentSuccList[0][0]
         #print currentSuccList
         #print not s.isEmpty()
-        if problem.isGoalState(currentSuccList[0][0]):
+        if problem.isGoalState(currentState):
             return getActionListFromSuccList(currentSuccList)
-        for succ in problem.getSuccessors(currentSuccList[0][0]):
-            visited = False
-            for (state, action, cost) in currentSuccList:
-                print state + " " + succ[0]
-                if state == succ[0]:
-                    print "V: " + state
-                    visited = True
-                    break
-                else:
-                    print "N: " + state
-            if not visited:
+        if currentState not in closed:
+            closed.add(currentState)
+            for succ in problem.getSuccessors(currentState):
+                # visited = False
+                # for (state, action, cost) in currentSuccList:
+                #     print state + " " + succ[0]
+                #     if state == succ[0]:
+                #         print "V: " + state
+                #         visited = True
+                #         break
+                #     else:
+                #         print "N: " + state
+                # if not visited:
+                #     newPath = list(currentSuccList)
+                #     newPath.insert(0, succ)
+                #     s.push(newPath)
                 newPath = list(currentSuccList)
                 newPath.insert(0, succ)
                 s.push(newPath)
@@ -132,13 +133,43 @@ def getActionListFromSuccList(succList):
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    s = util.Queue()
+    closed = set() 
+    s.push([(problem.getStartState(), 'INITIAL', 0)])
+
+    while not s.isEmpty():
+        currentSuccList = s.pop()
+        currentState = currentSuccList[0][0]
+        if problem.isGoalState(currentState):
+            return getActionListFromSuccList(currentSuccList)
+        if currentState not in closed:
+            closed.add(currentState)
+            for succ in problem.getSuccessors(currentState):
+                newPath = list(currentSuccList)
+                newPath.insert(0, succ)
+                s.push(newPath)
+    print "FAILURE"
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    s = util.PriorityQueue()
+    closed = set() 
+    s.push(([(problem.getStartState(), 'INITIAL', 0)], 0), 0)
+    
+    while not s.isEmpty():
+        currentPath = s.pop()
+        currentState = currentPath[0][0][0]
+        currentCost = currentPath[1]
+        if problem.isGoalState(currentState):
+            return getActionListFromSuccList(currentPath[0])
+        if currentState not in closed:
+            closed.add(currentState)
+            for succ in problem.getSuccessors(currentState):
+                newPath = list(currentPath[0])
+                newPath.insert(0, succ)
+                newCost = currentCost + succ[2]
+                s.push((newPath, newCost), newCost)
+    print "FAILURE"
 
 def nullHeuristic(state, problem=None):
     """
