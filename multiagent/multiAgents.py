@@ -151,8 +151,46 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        (score, action) = self.evaluateState(gameState, 0, self.depth)
+
+        return action
+
+    def evaluateState(self, state, agent, depth):
+        # if at depth 0, evaluate the current state and return
+        if depth == 0:
+            return (self.evaluationFunction(state), "")
+
+        actions = state.getLegalActions(agent)
+
+        # if this action results in winning or losing, end the search down and
+        # evaluate this terminal state
+        if len(actions) == 0:
+            return (self.evaluationFunction(state), "")
+
+        # used to score the actions as we evaluate them
+        maxScore = -float("inf")
+        pacmanAction = ""
+        minScore = float("inf")
+
+        for action in actions:
+            # find new state, next agent, and new depth and recurse on them
+            newState = state.generateSuccessor(agent, action)
+            newAgent = (agent + 1) % state.getNumAgents()
+            newDepth = depth - 1 if newAgent == 0 else depth
+            (score, subAction) = self.evaluateState(newState, newAgent, newDepth)
+
+            if agent == 0:
+                # pacman behavior (maximizer)
+                if score > maxScore:
+                    maxScore = score
+                    pacmanAction = action
+            else:
+                # ghost adversary (minimizer)
+                minScore = min(minScore, score)
+
+        # if pacman, return max score. else return min score
+        return (maxScore, pacmanAction) if agent == 0 else (minScore, "")
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
