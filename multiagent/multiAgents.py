@@ -312,8 +312,43 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Useful information you can extract from a GameState (pacman.py)
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+    # check ghosts, if we get too close to ghost, don't make the move
+    for ghost in newGhostStates:
+        ghostPos = ghost.getPosition()
+        distance = abs(ghostPos[0] - newPos[0]) + abs(ghostPos[1] - newPos[1]) 
+        if distance < 3:
+            return 0        
+
+    # check distance to closest food and how much food remaining
+    minFoodDist = float('inf')
+    foodCount = 0
+    totalDist = 0
+    for y in range(newFood.height):
+        for x in range(newFood.width):
+          if newFood[x][y]:
+            foodDist = abs(newPos[0] - x) + abs(newPos[1] - y)
+            minFoodDist = min(minFoodDist, foodDist)
+            foodCount += 1
+            totalDist += foodDist
+
+    if foodCount == 0:
+        return float('inf')
+
+    # scale so that eating food is better than being close
+    foodScore = (newFood.height*newFood.width) * ((newFood.height*newFood.width)-foodCount)
+    # make sure that closer is better than farther from food
+    foodDistScore = (newFood.height+newFood.width) - minFoodDist
+    #print "food score: " + str(foodScore) + ", foodDistScore: " + str(foodDistScore)
+    #currentGameState.data.score = foodDistScore + foodScore
+    #return currentGameState.getScore()
+    #print "state score: " + str(currentGameState.getScore()) + ", score: " + str(foodDistScore + foodScore)
+    return foodDistScore + foodScore + currentGameState.getScore() - totalDist
 
 # Abbreviation
 better = betterEvaluationFunction
