@@ -242,6 +242,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             else:
                 # ghost adversary (minimizer)
                 minScore = min(minScore, score)
+                # pruning on alpha
                 if score < alpha:
                     return (score, "")
                 beta = min(beta, score)
@@ -261,8 +262,48 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        (score, action) = self.evaluateState(gameState, 0, self.depth)
+
+        return action
+
+    def evaluateState(self, state, agent, depth):
+        # if at depth 0, evaluate the current state and return
+        if depth == 0:
+            return (self.evaluationFunction(state), "")
+
+        actions = state.getLegalActions(agent)
+
+        # if this action results in winning or losing, end the search down and
+        # evaluate this terminal state
+        if len(actions) == 0:
+            return (self.evaluationFunction(state), "")
+
+        # used to score the actions as we evaluate them
+        maxScore = -float("inf")
+        pacmanAction = ""
+        expectedScore = 0.0
+
+        for action in actions:
+            # find new state, next agent, and new depth and recurse on them
+            newState = state.generateSuccessor(agent, action)
+            newAgent = (agent + 1) % state.getNumAgents()
+            newDepth = depth - 1 if newAgent == 0 else depth
+            (score, subAction) = self.evaluateState(newState, newAgent, newDepth)
+
+            if agent == 0:
+                # pacman behavior (maximizer)
+                if score > maxScore:
+                    maxScore = score
+                    pacmanAction = action
+            else:
+                # ghost adversary (added to expected score)
+                expectedScore += score
+
+        expectedScore = expectedScore/len(actions)
+        # if pacman, return max score. else return expected score
+        return (maxScore, pacmanAction) if agent == 0 else (expectedScore, "")
+
+
 
 def betterEvaluationFunction(currentGameState):
     """
