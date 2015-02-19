@@ -310,9 +310,13 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: There are multiple components we account for. First, if the 
+      Manhattan distance to a ghost if less than 3, we give it a score of 0 (this is
+      a bad situation, we do not want to be in the this state). If this is not the case,
+      the score is based the distance to the closest food, the number of food remaining,
+      and the sum of all distances to food. These are all negated to minimize them.
     """
-    # Useful information you can extract from a GameState (pacman.py)
+    # Useful information we extract from a GameState (pacman.py)
     newPos = currentGameState.getPacmanPosition()
     newFood = currentGameState.getFood()
     newGhostStates = currentGameState.getGhostStates()
@@ -326,7 +330,7 @@ def betterEvaluationFunction(currentGameState):
             return 0        
 
     # check distance to closest food and how much food remaining
-    minFoodDist = float('inf')
+    minFoodDist = (newFood.height+newFood.width)
     foodCount = 0
     totalDist = 0
     for y in range(newFood.height):
@@ -337,17 +341,10 @@ def betterEvaluationFunction(currentGameState):
             foodCount += 1
             totalDist += foodDist
 
-    if foodCount == 0:
-        return float('inf')
-
     # scale so that eating food is better than being close
     foodScore = (newFood.height*newFood.width) * ((newFood.height*newFood.width)-foodCount)
     # make sure that closer is better than farther from food
     foodDistScore = (newFood.height+newFood.width) - minFoodDist
-    #print "food score: " + str(foodScore) + ", foodDistScore: " + str(foodDistScore)
-    #currentGameState.data.score = foodDistScore + foodScore
-    #return currentGameState.getScore()
-    #print "state score: " + str(currentGameState.getScore()) + ", score: " + str(foodDistScore + foodScore)
     return foodDistScore + foodScore + currentGameState.getScore() - totalDist
 
 # Abbreviation
