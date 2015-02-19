@@ -201,8 +201,53 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        (score, action) = self.evaluateState(gameState, 0, self.depth, -float('inf'), float('inf'))
+
+        return action
+
+
+    def evaluateState(self, state, agent, depth, alpha, beta):
+        # if at depth 0, evaluate the current state and return
+        if depth == 0:
+            return (self.evaluationFunction(state), "")
+
+        actions = state.getLegalActions(agent)
+
+        # if this action results in winning or losing, end the search down and
+        # evaluate this terminal state
+        if len(actions) == 0:
+            return (self.evaluationFunction(state), "")
+
+        # used to score the actions as we evaluate them
+        maxScore = -float("inf")
+        pacmanAction = ""
+        minScore = float("inf")
+
+        for action in actions:
+            # find new state, next agent, and new depth and recurse on them
+            newState = state.generateSuccessor(agent, action)
+            newAgent = (agent + 1) % state.getNumAgents()
+            newDepth = depth - 1 if newAgent == 0 else depth
+            (score, subAction) = self.evaluateState(newState, newAgent, newDepth, alpha, beta)
+
+            if agent == 0:
+                # pacman behavior (maximizer)
+                if score > maxScore:
+                    maxScore = score
+                    pacmanAction = action
+                # pruning on beta, return current action
+                if score > beta:
+                    return (score, "")
+                alpha = max(alpha, score)
+            else:
+                # ghost adversary (minimizer)
+                minScore = min(minScore, score)
+                if score < alpha:
+                    return (score, "")
+                beta = min(beta, score)
+
+        # if pacman, return max score. else return min score
+        return (maxScore, pacmanAction) if agent == 0 else (minScore, "")
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
