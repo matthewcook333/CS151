@@ -424,7 +424,17 @@ class JointParticleFilter:
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        "*** YOUR CODE HERE ***"
+        self.theDots = []
+
+        perms = list(itertools.product(self.legalPositions, repeat = self.numGhosts))
+
+        sampleScale = float(len(perms)) / self.numParticles
+
+        for i in range(self.numParticles):
+            index = int(i * sampleScale)
+            self.theDots.append(perms[index])
+
+
 
     def addGhostAgent(self, agent):
         """
@@ -471,7 +481,33 @@ class JointParticleFilter:
             return
         emissionModels = [busters.getObservationDistribution(dist) for dist in noisyDistances]
 
-        "*** YOUR CODE HERE ***"
+        for g in range(self.numGhosts):
+            if noisyDistances[g] == None:
+                for i in range(len(self.theDots)):
+                    self.theDots[i] = self.getParticleWithGhostInJail(self.theDots[i], g)
+
+        weightedDist = util.Counter()
+        seenNonZero = False
+        for i in range(len(self.theDots)):
+            dot = self.theDots[i]
+            weight = 1.0
+            for g in range(self.numGhosts):
+                if noisyDistances[g] != None:                
+                    ghostPos = dot[g]
+                    distFromPacman = util.manhattanDistance(ghostPos, pacmanPosition)
+                    ghostWeight = emissionModels[g][distFromPacman]
+                    weight *= ghostWeight
+            weightedDist[dot] += weight
+            if weight != 0:
+                seenNonZero = True
+
+        if seenNonZero == False:
+            self.initializeParticles()
+            for dot in self.theDots:
+                weightedDist[dot] += 1
+
+        for i in range(len(self.theDots)):
+            self.theDots[i] = util.sample(weightedDist)
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
@@ -527,19 +563,22 @@ class JointParticleFilter:
               agents are always the same.
         """
         newParticles = []
-        for oldParticle in self.particles:
+        for oldParticle in self.theDots:
             newParticle = list(oldParticle) # A list of ghost positions
             # now loop through and update each entry in newParticle...
-
-            "*** YOUR CODE HERE ***"
-
-            "*** END YOUR CODE HERE ***"
+            for g in range(self.numGhosts):
+                newPosDist = getPositionDistributionForGhost(
+                 setGhostPositions(gameState, oldParticle), g, self.ghostAgents[g])
+                newParticle[g] = util.sample(newPosDist)
             newParticles.append(tuple(newParticle))
-        self.particles = newParticles
+        self.theDots = newParticles
 
     def getBeliefDistribution(self):
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        beliefs = util.Counter()
+        for dot in self.theDots:
+            beliefs[dot] += 1
+        beliefs.normalize()
+        return beliefs
 
 # One JointInference module is shared globally across instances of MarginalInference
 jointInference = JointParticleFilter()
