@@ -72,6 +72,11 @@ def enhancedFeatureExtractorDigit(datum):
     for this datum (datum is of type samples.Datum).
 
     ## DESCRIBE YOUR ENHANCED FEATURES HERE...
+    Our enhanced feature is the one as described on the assignment.
+    We perform Breadth First Search starting from (0,0), marking
+    each white space as visited and not visiting dark pixels. Afterwards,
+    we iterate through the digit to see if any whitespace is not visited,
+    as then there are two regions of whitespace.
 
     ##
     """
@@ -129,6 +134,7 @@ def basicFeatureExtractorPacman(state):
         featureCounter = util.Counter()
         featureCounter['foodCount'] = foodCount
         features[action] = featureCounter
+    #print features
     return features, state.getLegalActions()
 
 def enhancedFeatureExtractorPacman(state):
@@ -152,8 +158,30 @@ def enhancedPacmanFeatures(state, action):
     It should return a counter with { <feature name> : <feature value>, ... }
     """
     features = util.Counter()
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    successor = state.generateSuccessor(0, action)
+    newFood = successor.getFood()
+    newPos = successor.getPacmanPosition()
+    newGhostStates = successor.getGhostStates()
+    # check distance to closest food and how much food remaining
+    minFoodDist = newFood.width + newFood.height
+    for y in range(newFood.height):
+        for x in range(newFood.width):
+            if newFood[x][y]:
+                minFoodDist = min(minFoodDist, abs(newPos[0] - x) + abs(newPos[1] - y))
+    features['foodDist'] = max(1, minFoodDist)
+
+    minGhostDist = newFood.width + newFood.height
+    for ghost in newGhostStates:
+        ghostPos = ghost.getPosition()
+        distance = abs(ghostPos[0] - newPos[0]) + abs(ghostPos[1] - newPos[1]) 
+        #if distance < 2:
+        #    features['ghostNear'] = 1
+        minGhostDist = min(minGhostDist, distance)
+    features['ghostDist'] = 1.0/(minGhostDist+1.0)
+    #print features
+
+
     return features
 
 
