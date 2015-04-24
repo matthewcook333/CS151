@@ -77,8 +77,37 @@ def enhancedFeatureExtractorDigit(datum):
     """
     features =  basicFeatureExtractorDigit(datum)
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    a = datum.getPixels()
+
+    q = util.Queue()
+    q.push((0, 0))
+    visited = util.Counter()
+
+    while not q.isEmpty():
+        (x, y) = q.pop()
+ 
+        if datum.getPixel(x, y) > 0:
+            continue
+
+        if x+1 < DIGIT_DATUM_WIDTH and visited[(x+1, y)] == 0:
+            q.push((x+1, y))
+            visited[(x+1, y)] = 1
+        if x-1 >= 0 and visited[(x-1, y)] == 0:
+            q.push((x-1, y))
+            visited[(x-1, y)] = 1
+        if y+1 < DIGIT_DATUM_HEIGHT and visited[(x, y+1)] == 0:
+            q.push((x, y+1))
+            visited[(x, y+1)] = 1
+        if y-1 >= 0 and visited[(x, y-1)] == 0:
+            q.push((x, y-1))
+            visited[(x, y-1)] = 1
+
+
+    features["WHITE_SPACE"] = 0
+    for x in range(DIGIT_DATUM_WIDTH):
+        for y in range(DIGIT_DATUM_HEIGHT):
+            if datum.getPixel(x, y) == 0 and visited[(x, y)] == 0:
+                features["WHITE_SPACE"] = 1
 
     return features
 
