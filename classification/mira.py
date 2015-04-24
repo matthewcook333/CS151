@@ -60,8 +60,47 @@ class MiraClassifier:
         datum is a counter from features to values for those features
         representing a vector of values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        bestWeights = util.Counter()
+        maxAccuracy = 0.0
+        for thisC in Cgrid:
+            tempWeights = self.weights.copy()
+            for iteration in range(self.max_iterations):
+                print "Starting iteration ", iteration, "..."
+                for i in range(len(trainingData)):
+                    maxLabel = None
+                    maxWeight = -float("inf")
+                    for label in self.legalLabels:
+                        weight = tempWeights[label] * trainingData[i]
+                        if weight > maxWeight:
+                            maxLabel = label
+                            maxWeight = weight
+                    if trainingLabels[i] != maxLabel:
+                         weightDiff = tempWeights[maxLabel] - tempWeights[trainingLabels[i]]
+                         numerator = (weightDiff * trainingData[i]) + 1.0
+                         denominator = 2.0 * (trainingData[i] * trainingData[i])
+
+                         tau = numerator / denominator
+                         minTau = min(thisC, tau)
+
+                         scaledWeights = trainingData[i]
+                         scaledWeights.divideAll(1.0 / tau)
+                         tempWeights[maxLabel] -= scaledWeights
+                         tempWeights[trainingLabels[i]] += scaledWeights
+
+            guesses = self.classify(validationData)
+            correctCount = 0.0
+            for i in range(len(guesses)):
+                if guesses[i] == validationLabels[i]:
+                    correctCount += 1.0
+
+            accuracy = correctCount / float(len(guesses))
+            if accuracy > maxAccuracy:
+                maxAccuracy = accuracy
+                bestWeights = tempWeights.copy()
+
+        # Update weights
+        self.weights = bestWeights.copy()
 
     def classify(self, data ):
         """
